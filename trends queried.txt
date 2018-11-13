@@ -1,0 +1,10 @@
+23DONT_MESS_UP_MY_TEMPO OR %23OneandOnlyBIDay OR Japan OR London OR %23mono OR Asia OR %23Trump OR %23Worlds2018 OR taiwan OR %23BREAKING
+%23Saudi OR %23masterchefsg OR %23ittfworldcup OR %23LOVEYOURSELFSG OR %23Australia OR %23%E3%83%A9%E3%83%96%E3%83%A9%E3%82%A4%E3%83%96 OR %23karachi
+from:ChannelNewsAsia OR from:kaixotic_ OR from:BBCNewsAsia OR from:bitebtccom OR from:ezadhfizy OR from:livenationsg OR from:mtvasia OR from:HallyuSG OR from:SubjectKpop OR from:TheDeeKosh
+not imported: country: MY
+from:aelfblockchain OR from:raikoart OR from:liricamore OR from:iSendim_ OR from:Greenlink_io OR from:selfllery OR from:Chaos0utlaw OR from:x3BrandonL OR from:Bulletproof_SG OR from:SGSportsHub
+from:SKYrenic OR from:RealUnkle1932 OR from:Artgerm OR from:xavierlur OR from:987fm OR from:sparkles1102 OR from:EXOrderSG OR from:SG_TKConcert OR from:sgXCLUSIVE OR from:sonymusicsg
+from:HallyuM OR from:purediamondcoin OR from:STcom OR from:__mbali OR from:ittfworld OR from:Carrotiess OR from:lamcproductions OR from:enthralleddd OR from:SportsFix_io OR from:MothershipSG
+from:russellmanhc OR from:PundiXLabs OR from:dove_network OR from:doublevoltage OR from:vancew90 OR from:ST_LifeTweets OR from:birdiebits OR from:therealFinanceX OR from:schoolidolu OR from:Reirachuu
+from:LeenaKumari3012 OR from:got67day OR from:haekjoyce OR from:everlife_ai OR from:Live_in_Asia OR from:MsCherylLouiseK OR from:DacxiGlobal OR from:venessa_chun OR from:JeremyKohCNA OR from:JustinOngCNA
+from:1moresmartwoman OR from:BandoriParty OR from:Adriananazri1 OR from:BandaiNamcoSEA OR from:essy917 OR from:STsportsdesk OR from:CollinSLKoh OR from:Seopport_SG OR from:Fadehhh OR from:bitbox_official

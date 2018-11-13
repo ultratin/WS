@@ -1,0 +1,22 @@
+# Created by https://www.gitignore.io/api/jupyternotebook
+# Edit at https://www.gitignore.io/?templates=jupyternotebook
+
+### JupyterNotebook ###
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+config.py
+# Remove previous ipynb_checkpoints
+#   git rm -r .ipynb_checkpoints/
+#
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+
+# End of https://www.gitignore.io/api/jupyternotebook
