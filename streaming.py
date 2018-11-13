@@ -10,8 +10,14 @@ import spacy
 import string
 import re
 import config
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk import word_tokenize
+from nltk import pos_tag
 #requires python download
 nlp = spacy.load('en')
+stop_words = stopwords.words("english")
+wnl = WordNetLemmatizer()
 
 #API KEYS
 consumer_token = config.consumer_token
@@ -74,10 +80,17 @@ def mongo_import():
 
 def text_processing(text):
     translation = str.maketrans('','', string.punctuation)
-    text = text.rstrip()
+    text = text.lower() # Lowercase everything
+    text = text.translate(translation) # Remove Puntuations
+    text = ''.join(filter(lambda x: x in string.printable, text)) #remove non ascii (Emoji)
+    text = text.rstrip() # REmove whitespace
     text = re.sub(r"http\S+", "", text) # remove links
-    text = "".join(filter(lambda x: x in string.printable, text)) #remove non ascii
-    text = text.translate(translation)
+    text = word_tokenize(text)
+    text = ([word for word in text if word not in stop_words])
+    text = [wnl.lemmatize(t, pos = 'n') for t in text]
+
+    
+    
     return text
 
 def stream_api(auth, listener, location):
@@ -101,11 +114,11 @@ def rest_api(auth, api , start_time):
             print(f"Trends: {trend_string}")
             rest_insert(api, trend_string, start_time)
         
-        user_list = top_retweets()
-        for users in user_list:
-            user_string = user_list_to_string(users)
-            print(f"User: {user_string}")
-            rest_insert(api, user_string, start_time)
+        # user_list = top_retweets()
+        # for users in user_list:
+        #     user_string = user_list_to_string(users)
+        #     print(f"User: {user_string}")
+        #     rest_insert(api, user_string, start_time)
 
 def rest_insert(api, query, start_time):
     search = tweepy.Cursor(api.search, q = query , geocode = SG_GEO, count = 1000, since_id = since_id_query)
