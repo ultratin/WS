@@ -3,7 +3,7 @@ import numpy as np
 
 #Mongo DB Information
 client = MongoClient('localhost', 27017)
-db = client['twitter']
+db = client['twitter2']
 streaming_collection = db['streaming']
 rest_collection = db['rest']
 

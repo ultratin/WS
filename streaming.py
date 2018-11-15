@@ -81,9 +81,9 @@ def mongo_import():
                 print("not imported: country: {}".format(json_data['place']['country_code']))
 
 def text_processing(text):
+    text = re.sub(r"http\S+", "", text) # remove links
     text = ''.join(filter(lambda x: x in string.printable, text)) #remove non ascii (Emoji)
     text = re.sub('\s+',' ',text) # REmove whitespace
-    text = re.sub(r"http\S+", "", text) # remove links
     return text
 
 def stream_api(auth, listener, location):
