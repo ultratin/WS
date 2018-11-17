@@ -7,7 +7,6 @@ db = client['twitter']
 streaming_collection = db['streaming']
 rest_collection = db['rest']
 
-# Aggregatuion
 if __name__ == '__main__':
     # Get all total number of tweets from rest and streaming collection
     rest_total = rest_collection.count()

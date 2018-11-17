@@ -27,7 +27,7 @@ SG_GEO = ("1.3521,103.8198,25km")
 
 #Mongo DB Information
 client = MongoClient('localhost', 27017)
-db = client['twitter']  
+db = client['twitter2']  
 streaming_collection = db['streaming']
 rest_collection = db['rest']
 
@@ -40,7 +40,7 @@ querying_queue = queue.Queue()
 is_since = False
 since_id_query = 0
 
-# STREAM apli class and puts data in queue so purely listening for data
+# STREAM api class and puts data in queue so purely listening for data
 class MyStreamListener(tweepy.StreamListener):
 
     def on_data(self, data):
@@ -64,9 +64,9 @@ def mongo_import():
         data = stream_process.get()
         json_data = json.loads(data)
          
-         # Check if the twitter text is in english, if not ignore
+       
         if json_data['lang'] == 'en':
-            # check if place is SG as bounding box include some area of malaysia and indonesia
+             # check if place is SG as bounding box include some area of malaysia and indonesia
             # if place is None, assume it is from singapore and accept
             if json_data['place']is None or json_data['place']['country_code'] == 'SG':
                 # Save the first twitter json id for since_id field in REST api
@@ -120,19 +120,24 @@ def rest_api(auth, api , start_time):
             user_string = user_list_to_string(users)
             print(f"User: {user_string}")
             rest_insert(api, user_string, start_time)
+        
+        print("Rest sleeping")
+        time.sleep(300)
 
 # User for inserting into mongodb
 def rest_insert(api, query, start_time):
     # Querying based on SG, since_id from the first tweet gotten from streaming and querying field.
-    search = tweepy.Cursor(api.search, q = query , geocode = SG_GEO, count = 1000, since_id = since_id_query)
+    search = tweepy.Cursor(api.search, q = query , geocode = SG_GEO, count = 1000, since_id = since_id_query, lang='en')
     for tweets in search.items():
         # Double check for that the data that is gotten is after the start time of this process
         data = tweets._json
         data_time = datetime.strptime(data["created_at"],'%a %b %d %H:%M:%S +0000 %Y')
         #Check if tweet gotten is after program start time and is in english
-        if data_time > start_time  and data['lang'] == 'en':
+        if data_time > start_time :
             # Check if the the tweet is from SG, if NULL assume from SG
-            if data['place']is None or data['place']['country_code'] == 'SG':
+            if data['place']is None :
+                rest_collection.insert(tweets._json)
+            elif data['place']['country_code'] == 'SG':
                 rest_collection.insert(tweets._json)
             else:
                 pass
@@ -234,7 +239,7 @@ if __name__ == '__main__':
         t3.daemon = True
         t3.start()
         # Main threads sleep for 55 minutes for a total of 1 hour and stops the program
-        time.sleep(3300)
+        time.sleep(3180)
         print("Exiting")
         sys.exit(0)
     except (KeyboardInterrupt, SystemExit):

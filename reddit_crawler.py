@@ -6,6 +6,7 @@ import config
 import sys
 
 from pymongo import MongoClient
+from datetime import datetime
 
 #Mongo DB Information
 client = MongoClient('localhost', 27017)
@@ -22,7 +23,6 @@ def mongo_import(queue):
     while True:
         data = queue.get()
         reddit_collection.insert(data)
-
 
 # Streaming reddit API
 def stream_reddit(subs, queue):
@@ -62,6 +62,12 @@ def rest_reddit(api, source, list_of_subs):
 
     print("completed rest", source)
 
+# for killing a process
+def kill_process(p):
+    p.terminate()
+    print(p.name, "process killed")
+    p.join()
+
 # Main method
 if __name__ == '__main__':
 
@@ -85,24 +91,37 @@ if __name__ == '__main__':
 
     queue = multiprocessing.Queue()
     
-    # try to start a stream process in the background
+    # for holding the processes
+    jobs = []
+    # Start time for reference for REST API
+    start_time = datetime.utcnow()
+    print(f"Starting Time: {start_time}")
     try:
         #start streaming process
         stream_p = multiprocessing.Process(target=stream_reddit, args=(subreddits,queue))
+        jobs.append(stream_p)
         stream_p.start()
 
         # start hot and new rest api process
         rest_hot_p = multiprocessing.Process(target=rest_reddit, args=(api,"hot",  reddit_subs))
         rest_new_p = multiprocessing.Process(target=rest_reddit, args=(api,"new",  reddit_subs))
+        jobs.append(rest_hot_p)
+        jobs.append(rest_new_p)
         rest_hot_p.start()
         rest_new_p.start()
         
         # queue processor for writing to db
         queue_p = multiprocessing.Process(target=mongo_import, args=(queue,))
+        jobs.append(queue_p)
+        queue_p.start()
 
         # Sleep for one hour and exit on wake
         time.sleep(3600)
         print("Exiting")
+        for p in jobs:
+            kill_process(p)
         sys.exit(0)
     except KeyboardInterrupt:
+        for p in jobs:
+            kill_process(p)
         sys.exit(0)
