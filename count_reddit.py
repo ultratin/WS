@@ -2,16 +2,20 @@ import json
 
 from pymongo import MongoClient
 
-# db collection
-reddit_db = 'reddit4'
+#Mongo DB Information
+client = MongoClient('localhost', 27017)
+db = client['reddit']  
+reddit_collection = db['reddit_collection']
 
-def process_upvotes_comments(source, db):
+
+#Process count for hot and new individually
+def process_upvotes_comments(source):
     upvotes = 0
     comments = 0
     highest_upvotes = 0
     highest_comments = 0
     # streaming db
-    for doc in db.find({'source':'stream'}):
+    for doc in reddit_collection.find({'source':source}):
         # upvotes processing
         upvotes += int(doc['score'])
         if highest_upvotes < int(doc['score']):
@@ -21,42 +25,34 @@ def process_upvotes_comments(source, db):
         if highest_comments < int(doc['num_comments']):
             highest_comments = int(doc['num_comments'])
     
-    print("\n-----------", source, "-----------")
-    print("Upvotes: ")
-    print("highest upvotes:", highest_upvotes)
-    print("total upvotes:", upvotes)
-    print("Comments: ")
-    print("highest comments:", highest_comments)
-    print("total comments:", comments)
+    print(f"\nUpvotes Count for {source}")
+    print(f"highest upvotes: {highest_upvotes}")
+    print(f"total upvotes: {upvotes}")
+    print(f"Comments count for {source} ")
+    print(f"highest comments: {highest_comments}")
+    print(f"total comments: {comments}")
 
 
 if __name__ == '__main__':
-    client = MongoClient('localhost', 27017)
-    db = client['ws'][reddit_db]
-    
     
     # total post counting
-    rest_hot_count = db.find({'source':'hot'}).count()
-    rest_new_count = db.find({'source':'new'}).count()
-    stream_count = db.find({'source':'stream'}).count()
+    rest_hot_count = reddit_collection.find({'source':'hot'}).count()
+    rest_new_count = reddit_collection.find({'source':'new'}).count()
+    stream_count = reddit_collection.find({'source':'stream'}).count()
     total_count = rest_hot_count + rest_new_count + stream_count
 
     print("\nResults from the previous reddit crawler run: \n----------------------")
     print("counts: ")
-    print("hot api count:", rest_hot_count)
-    print("new api count:", rest_new_count)
-    print("stream api count:", stream_count)
-    print("total posts count:", total_count)
+    print(f"hot api count: {rest_hot_count}")
+    print(f"new api count: {rest_new_count}")
+    print(f"stream api count: {stream_count}")
+    print(f"total posts count: {total_count}")
 
-    process_upvotes_comments('new', db)
-    process_upvotes_comments('hot', db)
-    process_upvotes_comments('stream', db)
+    process_upvotes_comments('new')
+    process_upvotes_comments('hot')
+    process_upvotes_comments('stream')
 
-  
-    # # checking if new submissions got into hot
-    # duplicates_rest = 0
-    # duplicates_stream = 0
-
+    # pipeline for aggregation in mongodb
     hot_stream_pipeline = [
         {"$match" : 
             {"$or" : [{"source":"hot"}, {"source":"stream"}]}},
@@ -81,9 +77,9 @@ if __name__ == '__main__':
         {"$count" : "count"}
     ]
 
-    for result in db.aggregate(hot_stream_pipeline):
-        print("number of streaming posts that got into hot during the 1 hour:", result)
+    for result in reddit_collection.aggregate(hot_stream_pipeline):
+        print(f"number of streaming posts that got into hot during the 1 hour: {result}")
     
     
-    for result in db.aggregate(hot_new_pipeline):
-        print("number of new posts that got into hot during the 1 hour:", result)
+    for result in reddit_collection.aggregate(hot_new_pipeline):
+        print(f"number of new posts that got into hot during the 1 hour: {result}" )
