@@ -10,27 +10,27 @@ reddit_collection = db['reddit_collection']
 
 #Process count for hot and new individually
 def process_upvotes_comments(source):
-    upvotes = 0
-    comments = 0
-    highest_upvotes = 0
-    highest_comments = 0
+    total_upvotes       = 0
+    total_comments      = 0
+    highest_upvotes     = 0
+    highest_comments    = 0
     # streaming db
     for doc in reddit_collection.find({'source':source}):
-        # upvotes processing
-        upvotes += int(doc['score'])
+        # count most upvotes and total upvotes
+        total_upvotes += int(doc['score'])
         if highest_upvotes < int(doc['score']):
             highest_upvotes = int(doc['score'])
-        # comments processing
-        comments += int(doc['num_comments'])
+        # count post with highest comments and total comments
+        total_comments += int(doc['num_comments'])
         if highest_comments < int(doc['num_comments']):
             highest_comments = int(doc['num_comments'])
     
     print(f"\nUpvotes Count for {source}")
     print(f"highest upvotes: {highest_upvotes}")
-    print(f"total upvotes: {upvotes}")
+    print(f"total upvotes: {total_upvotes}")
     print(f"Comments count for {source} ")
     print(f"highest comments: {highest_comments}")
-    print(f"total comments: {comments}")
+    print(f"total comments: {total_comments}")
 
 
 if __name__ == '__main__':
@@ -41,7 +41,6 @@ if __name__ == '__main__':
     stream_count = reddit_collection.find({'source':'stream'}).count()
     total_count = rest_hot_count + rest_new_count + stream_count
 
-    print("\nResults from the previous reddit crawler run: \n----------------------")
     print("counts: ")
     print(f"hot api count: {rest_hot_count}")
     print(f"new api count: {rest_new_count}")
@@ -52,34 +51,23 @@ if __name__ == '__main__':
     process_upvotes_comments('hot')
     process_upvotes_comments('stream')
 
-    # pipeline for aggregation in mongodb
-    hot_stream_pipeline = [
-        {"$match" : 
-            {"$or" : [{"source":"hot"}, {"source":"stream"}]}},
-        {"$group" : 
-            {"_id": { "id" : "$id" },
-            "uniqueIds": { "$addToSet": "$_id"},
-            "count": {"$sum": 1} }},
-        {"$match" : 
-            {"count": {"$gt":1}}},
-        {"$count" : "count"}
-    ]
+    # Counting how much post from streaming and new made it into hot
+    hot_list = list(reddit_collection.find({"source": "hot"}))
+    stream_list = list(reddit_collection.find({"source" : "stream"}))
+    new_list = list(reddit_collection.find({"source" : "new"}))
+    hot_existed = set([])
+    for post in hot_list:
+        hot_existed.add(post['id'])
     
-    hot_new_pipeline = [
-        {"$match" : 
-            {"$or" : [{"source":"hot"}, {"source":"new"}]}},
-        {"$group" : 
-            {"_id": { "id" : "$id" },
-            "uniqueIds": { "$addToSet": "$_id"},
-            "count": {"$sum": 1} }},
-        {"$match" : 
-            {"count": {"$gt":1}}},
-        {"$count" : "count"}
-    ]
+    hot_stream_count = 0
+    for post in stream_list:
+        if post['id'] in hot_existed:
+            hot_stream_count += 1
 
-    for result in reddit_collection.aggregate(hot_stream_pipeline):
-        print(f"number of streaming posts that got into hot during the 1 hour: {result}")
-    
-    
-    for result in reddit_collection.aggregate(hot_new_pipeline):
-        print(f"number of new posts that got into hot during the 1 hour: {result}" )
+    hot_new_count = 0
+    for post in new_list:
+        if post['id'] in hot_existed:
+            hot_new_count += 1
+
+    print(f"number of streaming posts that got into hot during the 1 hour: {hot_stream_count}")
+    print(f"number of new posts that got into hot during the 1 hour: {hot_new_count}" )

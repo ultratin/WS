@@ -92,36 +92,36 @@ if __name__ == '__main__':
     queue = multiprocessing.Queue()
     
     # for holding the processes
-    jobs = []
+    processes = []
     # Start time for reference for REST API
     start_time = datetime.utcnow()
     print(f"Starting Time: {start_time}")
     try:
         #start streaming process
-        stream_p = multiprocessing.Process(target=stream_reddit, args=(subreddits,queue))
-        jobs.append(stream_p)
-        stream_p.start()
+        streaming = multiprocessing.Process(target=stream_reddit, args=(subreddits,queue))
+        processes.append(streaming)
+        streaming.start()
 
         # start hot and new rest api process
-        rest_hot_p = multiprocessing.Process(target=rest_reddit, args=(api,"hot",  reddit_subs))
-        rest_new_p = multiprocessing.Process(target=rest_reddit, args=(api,"new",  reddit_subs))
-        jobs.append(rest_hot_p)
-        jobs.append(rest_new_p)
-        rest_hot_p.start()
-        rest_new_p.start()
+        rest_new = multiprocessing.Process(target=rest_reddit, args=(api,"new",  reddit_subs))
+        rest_hot = multiprocessing.Process(target=rest_reddit, args=(api,"hot",  reddit_subs))
+        processes.append(rest_hot)
+        processes.append(rest_new)
+        rest_hot.start()
+        rest_new.start()
         
         # queue processor for writing to db
-        queue_p = multiprocessing.Process(target=mongo_import, args=(queue,))
-        jobs.append(queue_p)
-        queue_p.start()
+        mongo_insert = multiprocessing.Process(target=mongo_import, args=(queue,))
+        processes.append(mongo_insert)
+        mongo_insert.start()
 
         # Sleep for one hour and exit on wake
         time.sleep(3600)
         print("Exiting")
-        for p in jobs:
+        for p in processes:
             kill_process(p)
         sys.exit(0)
     except KeyboardInterrupt:
-        for p in jobs:
+        for p in processes:
             kill_process(p)
         sys.exit(0)
