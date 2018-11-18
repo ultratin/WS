@@ -6,6 +6,8 @@ from pymongo import MongoClient
 client = MongoClient('localhost', 27017)
 db = client['reddit']  
 reddit_collection = db['reddit_collection']
+# Please use the below code if you are running on the 5 min sample and comment the one right above this
+# reddit_collection = db["reddit_submission"]
 
 
 #Process count for hot and new individually
